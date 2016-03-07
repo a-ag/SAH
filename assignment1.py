@@ -56,17 +56,37 @@ class assignment1_Part1:
 
 		
 
-	def mean_stdDeviation(self):
+	def mean_stdDeviation(self,query,stopWordInstruction):
 		list_count_postTitles = []
-		list_postTitles = self.data[:]['post_body'].tolist()
-		#tokenizer = RegexpTokenizer(r'\w+')
+		list_postTitles = self.data[:][query].tolist()
+		tokenizer = RegexpTokenizer(r'\w+')
 
-		for x in list_postTitles:
-			list_count_postTitles.append(len(x.split()))
+		stopwords_mine = []
+		#a.encode('ascii','ignore')
+		stopwords_mine+= (word.encode('ascii','ignore') for word in stopwords.words('english'))
+		tokenized_list = []
+		new_list_tokenized = []
+		for item in list_postTitles:
+			tokenized_list.append(tokenizer.tokenize(item))
+		
+		if stopWordInstruction==True:
+			for item in tokenized_list:
+				temp = []
+				temp += (word for word in item if word.lower() not in stopwords_mine)
+				#print temp
+				#raw_input()
+				new_list_tokenized.append(temp)
+		else:
+			new_list_tokenized=copy.deepcopy(tokenized_list)
+		
+
+
+		for x in new_list_tokenized:
+			list_count_postTitles.append(len(x))
 		#print list_count_postTitles
 		npArray = np.asarray(list_count_postTitles)
-		#print npArray.mean()
-		#print npArray.std()
+		print npArray.mean()
+		print npArray.std()
 		return [npArray.mean(),npArray.std(),list_postTitles,list_count_postTitles]
 
 	def nGramCalculation(self):
@@ -81,7 +101,7 @@ class assignment1_Part1:
 				list_words_LesserMean.append(list_postBody[index])
 
 		#self.uniGramCalculation(list_words_GreaterMean)	#calculate for lesser mean
-		self.nGramsBi(list_words_GreaterMean,True)
+		self.nGramsTri(list_words_LesserMean,True)
 
 
 	def uniGramCalculation(self,listAB):
@@ -287,7 +307,7 @@ class assignment1_Part1:
 		for index,item in enumerate(final_list_sorted):
 			new_list_term_rawFreq_normalizedFreq.append([item[0],item[1],item[1]/float(final_list_sorted[0][1])])
 
-		with open('csv2.csv','a') as testfile:
+		with open('csv4.csv','a') as testfile:
 			csv_writer = csv.writer(testfile)
 			for index in range(len(new_list_term_rawFreq_normalizedFreq[0])):
 				if counter<25:
@@ -313,6 +333,8 @@ class assignment1_Part1:
 if __name__=="__main__":
 	filename = '/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/gatech_Subreddit_Posts.txt'
 	object1 = assignment1_Part1(filename)
-	object1.nGramCalculation()
+	#object1.nGramCalculation()
+	query = 'post_title'	#post_title or post_body
+	object1.mean_stdDeviation(query,stopWordInstruction=True)
 
 
