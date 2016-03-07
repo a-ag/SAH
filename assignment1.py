@@ -142,26 +142,6 @@ class assignment1_Part1:
 			for index in range(len(new_list_term_rawFreq_normalizedFreq[0])):
 				csv_writer.writerow([x[index] for x in new_list_term_rawFreq_normalizedFreq])
 
-
-
-		#print new_list_term_rawFreq_normalizedFreq
-
-		#new_list_term_rawFreq_normalizedFreq_DataFrame = pd.Series(new_list_term_rawFreq_normalizedFreq)
-		#print new_list_term_rawFreq_normalizedFreq_DataFrame
-
-		#new_list_term_rawFreq_normalizedFreq_DataFrame.to_csv(path="csv1.csv")
-
-
-		#dictionary_unigram = {}
-		
-		#for word in list_words_stopRemoved:
-		#	if word not in dictionary_unigram.keys():
-		#		dictionary_unigram[word] = 1
-		#	else:
-		#		dictionary_unigram[word] += 1
-
-
-		#print dictionary_unigram.most_common(25)
 	def nGramsBi(self,listAB,stopWordInstruction):
 
 		stopwords_mine = []
@@ -325,6 +305,72 @@ class assignment1_Part1:
 
 
 
+class assignment1_part2:
+	def __init__(self,filename):
+		self.data = pd.read_csv(filename,names=['post_id','timestamp','username','post_title','post_body'],sep="	",header=None,parse_dates=[1])
+		#loading LIWC files
+		dict_paths = {}
+
+		dict_paths['positive_affect'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/positive_affect')
+		dict_paths['negative_affect'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/negative_affect')
+		dict_paths['anger'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/anger')
+		dict_paths['anxiety'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/anxiety')
+		dict_paths['sadness'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/anger')
+		dict_paths['swear'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/swear')
+
+		self.dict_LIWC = {}
+
+		for x in dict_paths:
+			file = open(dict_paths[x],'r')
+			reader = csv.reader(file)
+			self.dict_LIWC[x] = [row for row in reader]
+
+		#print self.dict_LIWC
+
+	def data_cleaning(self):
+
+		data_new = copy.deepcopy(self.data)
+		list_dates = []
+		list_times = []
+		list_postBody = []
+		for x in range(0,len(data_new)):
+			list_dates.append((data_new[:]['timestamp'][x]).date())
+			list_times.append(((data_new[:]['timestamp'][x]).hour))
+			list_postBody.append()
+
+		days= {0: 'Monday', 1:'Tuesday', 2:'Wednesday', 3:'Thursday', 4:'Friday', 5:'Saturday', 6:'Sunday'}
+		print len(list_dates)
+		print len(list_times)
+		#print list_times
+		print type(list_dates[0])
+		print list_dates[0],
+		print type(list_dates[0].weekday())
+		print list_dates[6],
+		print list_dates[6].weekday()
+		print list_dates[7],
+		print list_dates[7].weekday()
+
+		list_days=[]
+		for item in list_dates:
+			list_days.append(days[item.weekday()])
+
+		#print list_days[0]
+
+		#print set(list_times)
+		for index,item in enumerate(list_times):
+			temp = item - 5
+			if temp<0:
+				list_times[index] = temp + 24
+			else:
+				list_times[index] = temp
+
+		stopwords_mine = []
+		#a.encode('ascii','ignore')
+		stopwords_mine+= (word.encode('ascii','ignore') for word in stopwords.words('english'))
+
+		
+
+
 
 
 
@@ -332,9 +378,11 @@ class assignment1_Part1:
 
 if __name__=="__main__":
 	filename = '/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/gatech_Subreddit_Posts.txt'
-	object1 = assignment1_Part1(filename)
+	#object1 = assignment1_Part1(filename)
 	#object1.nGramCalculation()
-	query = 'post_title'	#post_title or post_body
-	object1.mean_stdDeviation(query,stopWordInstruction=True)
+	#query = 'post_title'	#post_title or post_body
+	#object1.mean_stdDeviation(query,stopWordInstruction=True)
+	object2 = assignment1_part2(filename)
+	object2.data_cleaning()
 
 
