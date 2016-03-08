@@ -9,6 +9,7 @@ import csv
 import nltk
 import operator
 from nltk.tokenize import RegexpTokenizer
+from nltk import stem
 
 #f = open("/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/gatech_Subreddit_Posts.txt")
 #print f.read()
@@ -90,7 +91,7 @@ class assignment1_Part1:
 		return [npArray.mean(),npArray.std(),list_postTitles,list_count_postTitles]
 
 	def nGramCalculation(self):
-		mean, std, list_postBody, list_count_postBody = self.mean_stdDeviation()
+		mean, std, list_postBody, list_count_postBody = self.mean_stdDeviation('post_body',True)
 		#stop word removal
 		list_words_GreaterMean = []
 		list_words_LesserMean = []
@@ -319,13 +320,17 @@ class assignment1_part2:
 		dict_paths['swear'] = ('/Users/akshayagarwal/myDesktop/Programming/SAH/Assignment_I-2/LIWC_lexicons/swear')
 
 		self.dict_LIWC = {}
-
+		tokenizer = RegexpTokenizer(r'\w+')
 		for x in dict_paths:
 			file = open(dict_paths[x],'r')
 			reader = csv.reader(file)
-			self.dict_LIWC[x] = [row for row in reader]
+			#temp = [row[0] for row in reader]
+			#print temp
+			#raw_input("Wait Here")
+			self.dict_LIWC[x] = [(tokenizer.tokenize(row[0]))[0] for row in reader]
 
-		#print self.dict_LIWC
+		print len(self.dict_LIWC['positive_affect'])
+		print self.dict_LIWC['positive_affect']
 
 	def data_cleaning(self):
 
@@ -336,7 +341,7 @@ class assignment1_part2:
 		for x in range(0,len(data_new)):
 			list_dates.append((data_new[:]['timestamp'][x]).date())
 			list_times.append(((data_new[:]['timestamp'][x]).hour))
-			list_postBody.append()
+			list_postBody.append(data_new[:]['post_body'][x])
 
 		days= {0: 'Monday', 1:'Tuesday', 2:'Wednesday', 3:'Thursday', 4:'Friday', 5:'Saturday', 6:'Sunday'}
 		print len(list_dates)
@@ -367,10 +372,98 @@ class assignment1_part2:
 		stopwords_mine = []
 		#a.encode('ascii','ignore')
 		stopwords_mine+= (word.encode('ascii','ignore') for word in stopwords.words('english'))
+		#stopwords_mine+= (word for word in stopwords.words('english'))
+
+		print len(list_days)
+		print len(list_times)
+		print len(list_postBody)
+		print list_postBody[0]
+
+		tokenizer = RegexpTokenizer(r'\w+')
+		tokenized_list = []
+		for item in list_postBody:
+			tokenized_list.append(tokenizer.tokenize(item))
+
+		print len(tokenized_list)
+		print tokenized_list[0]
+		new_list_tokenized = []
+
+		stemmer = stem.PorterStemmer() #seems to give better results as compared to Lancaster Stemmer
+
+		for item in tokenized_list:
+				temp = []
+				temp += (stemmer.stem(word.decode('utf-8','replace')).encode('ascii','ignore') for word in item if word.lower() not in stopwords_mine)
+				#print temp
+				#raw_input()
+				new_list_tokenized.append(temp)
+		print len(new_list_tokenized)
+		print new_list_tokenized[0]
+
+		dict_consolidatesPostsDay = {}
+
+		for index,item in enumerate(list_days):
+			if item in dict_consolidatesPostsDay.keys():
+				dict_consolidatesPostsDay[item]+=[(new_list_tokenized[index])]
+			else:
+				dict_consolidatesPostsDay[item] = []
+				dict_consolidatesPostsDay[item]+=[(new_list_tokenized[index])]
+
+		print "#######"
+		print len(new_list_tokenized)
+		dict_consolidatesHourPost = {}
+
+		#for index in range(24):
+			#dict_consolidatesHourPost[str(index)] = None
+
+		#raw_input()
+
+		for index,item in enumerate(list_times):
+			if item in dict_consolidatesHourPost.keys():
+				dict_consolidatesPostsDay[str(item)]+=[(new_list_tokenized[index])]
+			else:
+				dict_consolidatesHourPost[str(item)] = []
+				dict_consolidatesHourPost[str(item)] += [(new_list_tokenized[index])]
 
 		
 
+		print dict_consolidatesPostsDay.keys()
+		print len(dict_consolidatesPostsDay['Monday'])
 
+		###############
+		#Positive Affect Analysis
+		###############
+		dict_LIWC_count = {}
+
+		for value in self.dict_LIWC:
+			for item in dict_consolidatesPostsDay:
+				for index2 in range(len(dict_consolidatesPostsDay[index])):
+					for item3 in dict_consolidatesPostsDay[index][index2]:
+						if item3 in self.dict_LIWC:
+							if value not in dict_LIWC_count:
+								dict_LIWC_count[value] = 1
+							else:
+								dict_LIWC_count[value] += 1
+
+
+
+
+
+		#sum = 0
+		#for item in dict_consolidatesPostsDay:
+			#sum+=len(dict_consolidatesPostsDay[item])
+
+		#print dict_consolidatesPostsDay['Monday'][0]
+		#print sum
+
+		#sorted_dict = sorted(dict_consolidatesHourPost,key=dict_consolidatesHourPost.get)
+		#print dict_consolidatesHourPost.keys()
+		#print sorted_dict.keys()
+		#print dict_consolidatesPostsDay['Monday']
+
+		#print rxstem.stem('switched')
+
+		
+		#[rxstem.stem(i) for i in tokens]
 
 
 
@@ -383,6 +476,6 @@ if __name__=="__main__":
 	#query = 'post_title'	#post_title or post_body
 	#object1.mean_stdDeviation(query,stopWordInstruction=True)
 	object2 = assignment1_part2(filename)
-	object2.data_cleaning()
+	#object2.data_cleaning()
 
 
