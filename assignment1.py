@@ -329,10 +329,10 @@ class assignment1_part2:
 			#raw_input("Wait Here")
 			self.dict_LIWC[x] = [(tokenizer.tokenize(row[0]))[0] for row in reader]
 
-		print len(self.dict_LIWC['positive_affect'])
-		print self.dict_LIWC['positive_affect']
+		#print len(self.dict_LIWC['positive_affect'])
+		#print self.dict_LIWC['positive_affect']
 
-	def data_cleaning(self):
+	def data_cleaning_processing(self):
 
 		data_new = copy.deepcopy(self.data)
 		list_dates = []
@@ -430,22 +430,53 @@ class assignment1_part2:
 		print len(dict_consolidatesPostsDay['Monday'])
 
 		###############
-		#Positive Affect Analysis
+		#Affect Analysis by Day
 		###############
 		dict_LIWC_count = {}
-
+		#temp_sum = 0
 		for value in self.dict_LIWC:
+			temp_sum = 0
+			if value not in dict_LIWC_count.keys():
+					dict_LIWC_count[value] = {}
 			for item in dict_consolidatesPostsDay:
-				for index2 in range(len(dict_consolidatesPostsDay[index])):
-					for item3 in dict_consolidatesPostsDay[index][index2]:
-						if item3 in self.dict_LIWC:
-							if value not in dict_LIWC_count:
-								dict_LIWC_count[value] = 1
-							else:
-								dict_LIWC_count[value] += 1
+				
 
+				for index2 in range(len(dict_consolidatesPostsDay[item])):
+					temp_sum = 0
+					#print len(dict_consolidatesPostsDay[item][index2])
+					#if len(dict_consolidatesPostsDay[item][index2]) == 0:
+						#print index2
+						#print len(dict_consolidatesPostsDay[item])
+						#raw_input("Hi")
+					for item3 in dict_consolidatesPostsDay[item][index2]:
+						
+						#print item3
+						#raw_input("Wait Here Please")
+						if item3 in self.dict_LIWC[value]:
+							temp_sum+=1
 
+					if item in dict_LIWC_count[value].keys():
+						if float(len(dict_consolidatesPostsDay[item][index2]))==0:
+							dict_LIWC_count[value][item].append(0)
+						else:	
+							dict_LIWC_count[value][item].append(temp_sum/float(len(dict_consolidatesPostsDay[item][index2])))
+					else:
+						dict_LIWC_count[value][item] = []
+						if float(len(dict_consolidatesPostsDay[item][index2]))==0:
+							dict_LIWC_count[value][item].append(0)
+						else:	
+							dict_LIWC_count[value][item].append(temp_sum/float(len(dict_consolidatesPostsDay[item][index2])))
 
+		print dict_LIWC_count.keys()	
+		print dict_LIWC_count['positive_affect'].keys()
+		print np.mean(dict_LIWC_count['positive_affect']['Monday'])
+		print np.std(dict_LIWC_count['positive_affect']['Monday'])
+		print np.median(dict_LIWC_count['positive_affect']['Monday'])
+
+		###############
+		#Affect Analysis by Hour
+		###############
+		
 
 
 		#sum = 0
@@ -476,6 +507,6 @@ if __name__=="__main__":
 	#query = 'post_title'	#post_title or post_body
 	#object1.mean_stdDeviation(query,stopWordInstruction=True)
 	object2 = assignment1_part2(filename)
-	#object2.data_cleaning()
+	object2.data_cleaning_processing()
 
 
